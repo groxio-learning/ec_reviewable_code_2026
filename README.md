@@ -6,7 +6,7 @@ This is a hands-on class held over Google Meet. Please complete the setup below 
 
 ## 1. Install the class tools
 
-You will need:
+You will need (instructions below):
 
 - A browser that works with Google Meet
 - A working camera and microphone
