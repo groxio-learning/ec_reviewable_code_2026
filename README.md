@@ -12,8 +12,8 @@ You will need:
 - A working camera and microphone
 - Git: <https://git-scm.com/downloads>
 - An editor you are comfortable using
-- Elixir and Erlang/OTP
-- Phoenix
+- [Elixir and Erlang/OTP](https://elixir-lang.org/install.html)
+- [Phoenix](https://hexdocs.pm/phoenix/installation.html)
 - Livebook
 - PostgreSQL
 - A coding agent, such as Claude Code or Codex
@@ -22,9 +22,7 @@ We will use cameras during the class to improve communication and engagement. Te
 
 ## 2. Verify Elixir and Erlang/OTP
 
-Install a current, Phoenix-compatible version of Elixir and Erlang/OTP. Follow the official Elixir installation guide for your operating system:
-
-<https://elixir-lang.org/install.html>
+Install a current, Phoenix-compatible version of Elixir and Erlang/OTP. Follow the [official Elixir installation guide](https://elixir-lang.org/install.html) for your operating system.
 
 Verify the installation:
 
@@ -46,7 +44,7 @@ You should see the Observer window and an `:ok` return value.
 
 ## 3. Install and verify Phoenix
 
-Install the Phoenix project generator:
+Follow the [official Phoenix installation guide](https://hexdocs.pm/phoenix/installation.html), including its prerequisites, and install the Phoenix project generator:
 
 ```console
 $ mix local.hex --force
