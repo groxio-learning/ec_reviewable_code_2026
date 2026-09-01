@@ -114,7 +114,7 @@ You may use another coding agent if it can inspect and edit a local Elixir proje
 
 ## 7. Fork this repository
 
-Fork the class repository into your own GitHub account. **Do not clone the class repository directly.** If you want a local copy, clone your fork only after completing the fork.
+Fork the class repository into your own GitHub account. **Do not clone the class repository directly.** First create your fork on GitHub, and then clone your fork to your computer.
 
 1. Open <https://github.com/batate/ec_reviewable_code_2026>.
 2. Click **Fork** and create a fork in your GitHub account.
@@ -131,7 +131,11 @@ Verify that `origin` points to your fork:
 
 ```console
 $ git remote -v
+origin  https://github.com/your-github-user/ec_reviewable_code_2026.git (fetch)
+origin  https://github.com/your-github-user/ec_reviewable_code_2026.git (push)
 ```
+
+If `origin` contains `batate` instead of your GitHub username, you cloned the class repository rather than your fork. Go back to your fork on GitHub, copy its URL, and clone that repository instead.
 
 Add the class repository as `upstream`:
 
@@ -140,17 +144,21 @@ $ git remote add upstream https://github.com/batate/ec_reviewable_code_2026.git
 $ git remote -v
 ```
 
-You should now have:
+The output should show both remotes:
 
-- `origin` pointing to your fork
-- `upstream` pointing to the class repository
+```console
+origin    https://github.com/your-github-user/ec_reviewable_code_2026.git (fetch)
+origin    https://github.com/your-github-user/ec_reviewable_code_2026.git (push)
+upstream  https://github.com/batate/ec_reviewable_code_2026.git (fetch)
+upstream  https://github.com/batate/ec_reviewable_code_2026.git (push)
+```
 
 ## 8. Send a setup pull request
 
 Before class, update your local copy:
 
 ```console
-$ git pull upstream main
+$ git pull --ff-only upstream main
 ```
 
 Edit `pull-requests.md` and replace `Your Name Here` with your name. Then commit and push the change:
@@ -162,5 +170,30 @@ $ git push origin main
 ```
 
 Open your fork on GitHub and create a pull request back to the class repository.
+
+## 9. Confirm that setup is complete
+
+Run these commands from your local `ec_reviewable_code_2026` directory:
+
+```console
+$ git remote get-url origin
+https://github.com/your-github-user/ec_reviewable_code_2026.git
+
+$ git remote get-url upstream
+https://github.com/batate/ec_reviewable_code_2026.git
+
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+```
+
+Your setup is complete when:
+
+- The repository is forked into your GitHub account.
+- Your local checkout was cloned from your fork.
+- `origin` points to your fork.
+- `upstream` points to the class repository owned by `batate`.
+- Your name change is committed and pushed to your fork.
+- You have opened a pull request from your fork to the class repository.
 
 Please do not leave setup until Friday. If any verification step fails, allow time to resolve it before this hands-on class begins.
