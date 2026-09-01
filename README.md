@@ -112,12 +112,15 @@ Follow the provider's setup instructions, authenticate, and verify that the agen
 
 You may use another coding agent if it can inspect and edit a local Elixir project, run terminal commands, and help review changes.
 
-## 7. Fork and clone this repository
+## 7. Fork this repository
+
+Fork the class repository into your own GitHub account. **Do not clone the class repository directly.** If you want a local copy, clone your fork only after completing the fork.
 
 1. Open <https://github.com/batate/ec_reviewable_code_2026>.
 2. Click **Fork** and create a fork in your GitHub account.
-3. On your fork, click **Code** and copy its clone URL.
-4. Clone your fork and enter the repository:
+3. Confirm that GitHub has taken you to the new repository under your own account.
+4. On your fork, click **Code** and copy its clone URL.
+5. Clone your fork—not the class repository—and enter it:
 
 ```console
 $ git clone <paste-your-fork-url>
