@@ -116,7 +116,7 @@ You may use another coding agent if it can inspect and edit a local Elixir proje
 
 Fork the class repository into your own GitHub account. **Do not clone the class repository directly.** First create your fork on GitHub, and then clone your fork to your computer.
 
-1. Open <https://github.com/batate/ec_reviewable_code_2026>.
+1. Open <https://github.com/groxio-learning/ec_reviewable_code_2026>.
 2. Click **Fork** and create a fork in your GitHub account.
 3. Confirm that GitHub has taken you to the new repository under your own account.
 4. On your fork, click **Code** and copy its clone URL.
@@ -135,12 +135,12 @@ origin  https://github.com/your-github-user/ec_reviewable_code_2026.git (fetch)
 origin  https://github.com/your-github-user/ec_reviewable_code_2026.git (push)
 ```
 
-If `origin` contains `batate` instead of your GitHub username, you cloned the class repository rather than your fork. Go back to your fork on GitHub, copy its URL, and clone that repository instead.
+If `origin` contains `groxio-learning` instead of your GitHub username, you cloned the class repository rather than your fork. Go back to your fork on GitHub, copy its URL, and clone that repository instead.
 
 Add the class repository as `upstream`:
 
 ```console
-$ git remote add upstream https://github.com/batate/ec_reviewable_code_2026.git
+$ git remote add upstream https://github.com/groxio-learning/ec_reviewable_code_2026.git
 $ git remote -v
 ```
 
@@ -149,11 +149,11 @@ The output should show both remotes:
 ```console
 origin    https://github.com/your-github-user/ec_reviewable_code_2026.git (fetch)
 origin    https://github.com/your-github-user/ec_reviewable_code_2026.git (push)
-upstream  https://github.com/batate/ec_reviewable_code_2026.git (fetch)
-upstream  https://github.com/batate/ec_reviewable_code_2026.git (push)
+upstream  https://github.com/groxio-learning/ec_reviewable_code_2026.git (fetch)
+upstream  https://github.com/groxio-learning/ec_reviewable_code_2026.git (push)
 ```
 
-Your `origin` URL may use either HTTPS (`https://github.com/...`) or SSH (`git@github.com:...`). Both are correct as long as `origin` names your GitHub account and `upstream` names `batate`.
+Your `origin` URL may use either HTTPS (`https://github.com/...`) or SSH (`git@github.com:...`). Both are correct as long as `origin` names your GitHub account and `upstream` names `groxio-learning`.
 
 ## 8. Send a setup pull request
 
@@ -182,7 +182,7 @@ $ git remote get-url origin
 https://github.com/your-github-user/ec_reviewable_code_2026.git
 
 $ git remote get-url upstream
-https://github.com/batate/ec_reviewable_code_2026.git
+https://github.com/groxio-learning/ec_reviewable_code_2026.git
 
 $ git status
 On branch main
@@ -194,7 +194,7 @@ Your setup is complete when:
 - The repository is forked into your GitHub account.
 - Your local checkout was cloned from your fork.
 - `origin` points to your fork.
-- `upstream` points to the class repository owned by `batate`.
+- `upstream` points to the class repository owned by `groxio-learning`.
 - Your name change is committed and pushed to your fork.
 - You have opened a pull request from your fork to the class repository.
 
