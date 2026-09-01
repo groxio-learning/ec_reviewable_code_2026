@@ -153,6 +153,8 @@ upstream  https://github.com/batate/ec_reviewable_code_2026.git (fetch)
 upstream  https://github.com/batate/ec_reviewable_code_2026.git (push)
 ```
 
+Your `origin` URL may use either HTTPS (`https://github.com/...`) or SSH (`git@github.com:...`). Both are correct as long as `origin` names your GitHub account and `upstream` names `batate`.
+
 ## 8. Send a setup pull request
 
 Before class, update your local copy:
