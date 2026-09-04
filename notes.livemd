@@ -58,12 +58,9 @@ We saw:
 * Random generator within functional core (Prevents us from testing predicably)
 * A six letter word!
 * @impl true instead of @impl Phoenix.LiveView (not explicit)
-  no keyboard
-  guess memory
-  can't see past guesses
-  guesses disappeared
-  limited dictionary
-  poor dictionary abstraction
+* No keyboard
+* Can't see past guesses
+* Limited/poor dictionary abstraction
 
 Some breakthroughs to help us so far:
 
