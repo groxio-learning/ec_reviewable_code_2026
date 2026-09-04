@@ -20,3 +20,63 @@ AI-assisted development failure modes mentioned by session attendees.
 * Nested `case` expressions and deep indentation instead of clearer constructs such as `with`
 * Inappropriate preference for LiveComponents
 * Output that is difficult to trust without close validation
+
+## Bad Wordle
+
+For the session we're trying to build a (or multiple) "bad" version of Worlde not by prompting for bad code directly but rather prompting poorly, generally. We won't use usage_rules or tidewave, and we'll be using a lesser model for the work.
+
+We'll work in pull requests to encourage good practice around reviewable (open source especialy) code!
+
+<!-- livebook:{"break_markdown":true} -->
+
+#### Notes from the first game / before the break
+
+First prompt to Haiku 4.5:
+
+```
+create a wordle game in phoenix liveview?
+```
+
+Bob's skills will be loaded and used (issues with getting Claude Code to not present them!); we'll see how this impacts the "conveyor belt of words" mental model we've discussed. Skills may make this worse, counterintuitively!
+
+A few red/green indicators we'll be looking for:
+
+* functional core/imperative shell
+* managing dictionaries
+* LiveComponents used?
+
+After the initial game was created and ran, we immediately saw the score disappear as new guesses were made! So we have a few things we'll be looking for e.g.
+
+* Supervision/OTP usage (blast radius for failures)
+* GenServer for every game (wrong, because already one under the LiveView!)
+* Functional Core/Imperative Shell
+* CRC pattern (idiomatic Phoenix)
+* Browser elements vs. API elements
+
+We saw:
+
+* Random generator within functional core (Prevents us from testing predicably)
+* A six letter word!
+* @impl true instead of @impl Phoenix.LiveView (not explicit)
+  no keyboard
+  guess memory
+  can't see past guesses
+  guesses disappeared
+  limited dictionary
+  poor dictionary abstraction
+
+Some breakthroughs to help us so far:
+
+* Better tooling for the agent
+* Be defensive, especially good review independent of the current conversation
+* Keep some red/green indicators to yourself until review (symptoms rather than problems)
+* Throw away, re-prompt! Even for seniors supporting juniors, throw away whole pull requests
+  * Help them look at e.g. accuracy and portion control
+
+## Misc notes from the session
+
+#### Ash (Shawn & Bruce discussion):
+
+* Ash has well-reasoned trapdoors which allow you to look at lower layers, so there's a flexible API where Ash doesn't have to solve everything.
+* BUT if you layer on a set of skills that use Ash to solve a problem and you don't HAVE to use ash to solve the problem, you're often coming up with code that "works around" the framework.
+* An issue seen is agents using ash functions instead of domain functions; generally the wrong way to do it.
