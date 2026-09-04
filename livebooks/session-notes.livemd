@@ -118,6 +118,14 @@ Techniques
   * ask questions based on patterns we know e.g. CRC, FC/IS
   * prime with example
 
+## Breakthroughs
+
+Generally we agree: do what you can to add determinism to the process of working with agents!
+
+* better tools (e.g. Tidewave, usage_rules)
+* SKILLs to guide work and provide domain perspective
+* plan!
+
 ## Misc notes from the session
 
 * LLMs are pattern amplification engines
