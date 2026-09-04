@@ -1,0 +1,50 @@
+# CRC Pattern - Construct - Reduce - Convert
+
+## The Answer
+
+```elixir
+42
+
+```
+
+## Functional Core
+
+```elixir
+defmodule Counter do
+  # Construct
+
+  def new(input) do
+    String.to_integer(input)
+  end
+
+  # Reduce
+
+  def add(acc, number) do
+    acc + number
+  end
+
+  # Convert
+
+  def show(acc) do
+    "The ants arrrrrr be #{acc}"
+  end
+end
+```
+
+## Pipe
+
+```elixir
+input = "42"
+
+```
+
+```elixir
+import Counter
+
+input
+|> new()
+|> add(1)
+|> add(1)
+|> add(-1)
+|> show()
+```
