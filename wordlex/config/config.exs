@@ -8,6 +8,7 @@
 import Config
 
 config :wordlex,
+  answer_picker: Wordlex.RandomAnswerPicker,
   ecto_repos: [Wordlex.Repo],
   generators: [timestamp_type: :utc_datetime]
 

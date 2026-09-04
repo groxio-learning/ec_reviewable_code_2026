@@ -1,11 +1,21 @@
 # Wordlex
 
+Wordlex is a Wordle-style Phoenix LiveView game. Guess a five-letter word in six tries and use the board and spent-letter keyboard to narrow down the answer. It includes the complete canonical original Wordle corpus: 2,315 answers and 10,657 supplemental guesses.
+
+The game uses a pure Construct-Reduce-Convert functional core with LiveView and random answer selection in the imperative shell. Games live only for the lifetime of a LiveView connection; no game data is persisted.
+
 To start your Phoenix server:
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+* Run `mix setup` to install and set up dependencies
+* Start Phoenix with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+Visit [`localhost:4000`](http://localhost:4000) to play.
+
+Run the test and quality suite with:
+
+```console
+$ mix precommit
+```
 
 ## Development tools
 

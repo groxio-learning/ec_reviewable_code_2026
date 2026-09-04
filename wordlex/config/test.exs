@@ -1,5 +1,7 @@
 import Config
 
+config :wordlex, answer_picker: Wordlex.FixedAnswerPicker
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
