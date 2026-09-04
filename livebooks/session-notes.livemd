@@ -87,7 +87,46 @@ Construct-Reduce-Convert (CRC):
 * See: https://grox.io/blog/36-design-for-ai-why-pure-functions-make-better-ai-partners
 * Build the simplest business model you understand, which shows the structure of what you want to design, then generalize it.
 
+## Teaching & Changes in our Work
+
+Some of the teaching method behind this session, per Bruce:
+
+Anchor
+
+* issues we see
+* why is elixir good at this
+* will we still have a job, especially with Elixir?
+
+Add
+
+* CRC
+* Do Fun Things with Big Loud Worker Bees
+* Cost flow in agentic loop
+
+Apply
+
+* the different people driving the session
+
+Away
+
+* breakthroughs
+
+Techniques
+
+* throw away and start over
+* focus agent on the area that's breaking (ask questions to teach)
+  * ask questions based on patterns we know e.g. CRC, FC/IS
+  * prime with example
+
 ## Misc notes from the session
+
+* LLMs are pattern amplification engines
+* Bob's skills & dotifles https://github.com/bnadlerjr/dotfiles/tree/main/claude
+* Resources to consider:
+  * https://github.com/elixir-vibe
+  * https://github.com/elixir-vibe/ex_slop
+  * https://github.com/ash-project/usage_rules
+  * https://tidewave.hexdocs.pm/mcp.html
 
 #### Ash (Shawn & Bruce discussion):
 
