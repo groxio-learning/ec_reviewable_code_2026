@@ -1,0 +1,22 @@
+# EC 2026 Reviewable Code Notes
+
+## Session Observations
+
+AI-assisted development failure modes mentioned by session attendees.
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Issues seen
+
+* Defensive, redundant checks and unnecessarily complex implementations
+* Side effects leaking into the functional core
+* Duplicated code or near-duplicate functions instead of reusing existing functions and modules (especially as public functions, not just those private within the functional core)
+* Repeated setup and variables within individual tests instead of shared test setup
+* Starting implementation before enough context is available
+* Losing context as work progresses, exacerbated by token limits that disrupt programming flow
+* Missing failure modes such as `nil` exceptions, requiring secondary review
+* Difficulty reasoning about real-time state transitions across elements and users
+* Non-idiomatic Elixir, including generally a lack of pipelines
+* Nested `case` expressions and deep indentation instead of clearer constructs such as `with`
+* Inappropriate preference for LiveComponents
+* Output that is difficult to trust without close validation
