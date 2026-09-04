@@ -70,6 +70,23 @@ Some breakthroughs to help us so far:
 * Throw away, re-prompt! Even for seniors supporting juniors, throw away whole pull requests
   * Help them look at e.g. accuracy and portion control
 
+## CRC & Functional Core
+
+Two premises from Bruce: "If you build your core with the functional core in mind first (put code there when you can), your agents will be more accurate & you'll spend fewer tokens."
+
+* Even Haiku will be suitable for code generation within the functional core!
+* Elixir having bindings instead of mutable variables is part of what makes the language extraordinarily accurate.
+  * See: https://dashbit.co/blog/why-elixir-best-language-for-ai
+* You'll want to generally be doing a different kind of testing, with this approach: property-based testing.
+
+Construct-Reduce-Convert (CRC):
+
+* "Tokenizing Reducer Pattern" is the academic name for CRC!
+* Most Elixir functional cores are designed this way.
+  * pipe operator, first argument as the generic data type for the module
+* See: https://grox.io/blog/36-design-for-ai-why-pure-functions-make-better-ai-partners
+* Build the simplest business model you understand, which shows the structure of what you want to design, then generalize it.
+
 ## Misc notes from the session
 
 #### Ash (Shawn & Bruce discussion):
