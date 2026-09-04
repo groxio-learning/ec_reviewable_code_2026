@@ -1,4 +1,5 @@
 Bruce Tate
+Shawn O'Neill
 Caleb Currie
 Clive Harber
 Hugo Frappier
