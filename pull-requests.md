@@ -6,4 +6,6 @@ Berenice Medel
 Bob Nadler
 Ruben Amortegui
 Erin Polley
+Alvaro Delgado
+Emmanuel Sambo
 Your Name Here
