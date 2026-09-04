@@ -1,0 +1,345 @@
+# Reviewable Elixir with Coding Agents
+
+## Section
+
+Coding agents increase throughput, but plausible code is not necessarily correct, idiomatic, or easy to review. This notebook turns anonymized workshop observations into a compact set of examples and review practices.
+
+## What reviewers are seeing
+
+| Risk observed                                                           | Review response                                                                         |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Missing nil-related and other failure paths                             | Make boundary behavior explicit and assert it.                                          |
+| Difficulty reasoning about real-time state across users and UI elements | Model events and permitted transitions independently of the UI.                         |
+| Redundant checks and unnecessarily complex implementations              | Ask what can be removed without changing the contract.                                  |
+| Nested `case` expressions and deep indentation                          | Use `with` for a linear success path; retain `case` for meaningful branching.           |
+| Non-idiomatic data transformations                                      | Use pipelines when they make one value's journey easier to read.                        |
+| Side effects inside the functional core                                 | Return decisions or commands; perform effects at the boundary.                          |
+| Duplicated functions, modules, and test setup                           | Search first and reuse established public contracts and fixtures.                       |
+| Implementation beginning before enough context is available             | Require a short inspection and design checkpoint before editing.                        |
+| Context loss as a session grows                                         | Supply narrow interfaces, invariants, representative callers, and useful documentation. |
+| LiveComponents used only to split markup                                | Choose components according to state and event ownership.                               |
+
+These are practitioner observations, not measured claims. They are kept anonymous so the material cannot be attributed to individual attendees.
+
+## 1. Make absence part of the contract
+
+Chaining `account.profile.display_name` assumes both values exist. Adding a default mechanically may hide invalid domain data, so return the decision explicitly instead:
+
+```elixir
+defmodule Greeting do
+  @spec for_account(term()) ::
+          {:ok, String.t()} | {:error, :name_unavailable | :invalid_account}
+  def for_account(%{profile: %{display_name: name}}) when is_binary(name) do
+    case String.trim(name) do
+      "" -> {:error, :name_unavailable}
+      display_name -> {:ok, "Hello, " <> display_name}
+    end
+  end
+
+  def for_account(%{}), do: {:error, :name_unavailable}
+  def for_account(_value), do: {:error, :invalid_account}
+end
+
+valid = Greeting.for_account(%{profile: %{display_name: "Ada"}})
+missing = Greeting.for_account(%{profile: nil})
+invalid = Greeting.for_account(nil)
+blank = Greeting.for_account(%{profile: %{display_name: "  "}})
+
+{:ok, "Hello, Ada"} = valid
+{:error, :name_unavailable} = missing
+{:error, :invalid_account} = invalid
+{:error, :name_unavailable} = blank
+
+%{valid: valid, missing: missing, invalid: invalid, blank: blank}
+```
+
+The important question is not “How do we avoid an exception?” It is “What does absence mean in this domain?”
+
+## 2. Prefer a visible, reusable core
+
+The following example combines four useful properties: a public normalization contract, a pipeline for transformation, `with` for a linear success path, and commands returned as data rather than executed in the core.
+
+```elixir
+defmodule AccountEmail do
+  @spec normalize(term()) :: {:ok, String.t()} | {:error, :invalid_email}
+  def normalize(email) when is_binary(email) do
+    normalized =
+      email
+      |> String.trim()
+      |> String.downcase()
+
+    case String.split(normalized, "@") do
+      [local, domain] when byte_size(local) > 0 and byte_size(domain) > 0 ->
+        if String.match?(normalized, ~r/\s/u) do
+          {:error, :invalid_email}
+        else
+          {:ok, normalized}
+        end
+
+      _other ->
+        {:error, :invalid_email}
+    end
+  end
+
+  def normalize(_value), do: {:error, :invalid_email}
+end
+
+defmodule InvitationPlan do
+  @type command :: {:send_invitation, String.t()}
+  @type plan :: %{email: String.t(), commands: [command()]}
+
+  @spec build(term(), [String.t()]) ::
+          {:ok, plan()} | {:error, :invalid_email | :domain_not_allowed}
+  def build(raw_email, allowed_domains) do
+    normalized_domains = Enum.map(allowed_domains, &normalize_domain/1)
+
+    with {:ok, email} <- AccountEmail.normalize(raw_email),
+         :ok <- allow_domain(email, normalized_domains) do
+      {:ok, %{email: email, commands: [{:send_invitation, email}]}}
+    end
+  end
+
+  defp allow_domain(email, allowed_domains) do
+    [_, domain] = String.split(email, "@", parts: 2)
+
+    if Enum.member?(allowed_domains, domain) do
+      :ok
+    else
+      {:error, :domain_not_allowed}
+    end
+  end
+
+  defp normalize_domain(domain) do
+    domain
+    |> String.trim()
+    |> String.downcase()
+  end
+end
+
+accepted = InvitationPlan.build(" PERSON@EXAMPLE.COM ", ["example.com"])
+accepted_mixed_case = InvitationPlan.build("person@example.com", [" EXAMPLE.COM "])
+rejected = InvitationPlan.build("person@elsewhere.test", ["example.com"])
+
+{:ok, %{email: "person@example.com", commands: [{:send_invitation, _email}]}} = accepted
+{:ok, %{email: "person@example.com"}} = accepted_mixed_case
+{:error, :domain_not_allowed} = rejected
+{:error, :invalid_email} = AccountEmail.normalize("a@b@c")
+{:error, :invalid_email} = AccountEmail.normalize("a b@example.com")
+
+%{accepted: accepted, accepted_mixed_case: accepted_mixed_case, rejected: rejected}
+```
+
+`AccountEmail` deliberately checks only the shape this example needs: exactly one `@`, non-empty parts, and no whitespace. Production requirements may demand more. An orchestration layer can persist the invitation and execute the returned command. The core remains deterministic. `case` remains preferable when branches represent distinct workflows rather than a pass-through error path.
+
+## 3. Make real-time transitions explicit
+
+LiveView correctness often depends on an event sequence. A small state machine makes legal transitions testable without a socket or browser.
+
+```elixir
+defmodule EditorState do
+  @type status :: :viewing | :editing | :saving
+
+  @type t :: %{
+          status: status(),
+          owner: String.t() | nil,
+          version: non_neg_integer(),
+          draft: String.t(),
+          save_ref: String.t() | nil
+        }
+
+  @type event ::
+          {:begin_edit, String.t()}
+          | {:change, String.t(), String.t()}
+          | {:request_save, String.t(), String.t()}
+          | {:saved, String.t(), non_neg_integer()}
+          | {:leave, String.t()}
+
+  @spec transition(t(), event()) :: {:ok, t()} | {:error, :invalid_transition}
+  def transition(%{status: :viewing} = state, {:begin_edit, user_id})
+      when is_binary(user_id) do
+    {:ok, %{state | status: :editing, owner: user_id}}
+  end
+
+  def transition(%{status: :editing, owner: user_id} = state, {:change, user_id, text})
+      when is_binary(text) do
+    {:ok, %{state | draft: text}}
+  end
+
+  def transition(
+        %{status: :editing, owner: user_id} = state,
+        {:request_save, user_id, save_ref}
+      )
+      when is_binary(save_ref) and byte_size(save_ref) > 0 do
+    {:ok, %{state | status: :saving, save_ref: save_ref}}
+  end
+
+  def transition(
+        %{status: :saving, save_ref: save_ref} = state,
+        {:saved, save_ref, version}
+      )
+      when is_integer(version) and version > state.version do
+    {:ok, %{state | status: :viewing, owner: nil, version: version, save_ref: nil}}
+  end
+
+  def transition(%{owner: user_id} = state, {:leave, user_id}) do
+    {:ok, %{state | status: :viewing, owner: nil, save_ref: nil}}
+  end
+
+  def transition(_state, _event), do: {:error, :invalid_transition}
+
+  @spec apply_all(t(), [event()]) ::
+          {:ok, t()} | {:error, event(), :invalid_transition}
+  def apply_all(state, events) do
+    Enum.reduce_while(events, {:ok, state}, fn event, {:ok, current} ->
+      case transition(current, event) do
+        {:ok, next} -> {:cont, {:ok, next}}
+        {:error, reason} -> {:halt, {:error, event, reason}}
+      end
+    end)
+  end
+end
+
+initial = %{
+  status: :viewing,
+  owner: nil,
+  version: 7,
+  draft: "Draft",
+  save_ref: nil
+}
+
+events = [
+  {:begin_edit, "user-1"},
+  {:change, "user-1", "Revised draft"},
+  {:request_save, "user-1", "save-8"},
+  {:saved, "save-8", 8}
+]
+
+{:ok, final_state} = EditorState.apply_all(initial, events)
+%{status: :viewing, version: 8, draft: "Revised draft", save_ref: nil} = final_state
+
+{:ok, editing} = EditorState.transition(initial, {:begin_edit, "user-1"})
+{:ok, saving} = EditorState.transition(editing, {:request_save, "user-1", "current-save"})
+
+stale_result = EditorState.transition(saving, {:saved, "old-save", 8})
+{:error, :invalid_transition} = stale_result
+
+%{completed: final_state, stale_result: stale_result}
+```
+
+The operation reference prevents an old save response from completing a newer save. A production design must also decide what happens on simultaneous edits, disconnects, retries, authorization changes, and persistence failures.
+
+## 4. Search before generating
+
+Before implementation, give the agent the smallest context that preserves the contract:
+
+1. Required behavior and explicit non-goals.
+2. Public interfaces, types, and invariants.
+3. Representative callers and tests.
+4. Existing helpers and components that should be reused.
+5. Project conventions and prohibited patterns.
+6. Acceptance examples and permitted commands.
+
+Require a checkpoint before editing:
+
+> Inspect the relevant implementation, callers, and tests. Summarize the existing contract and reusable functions. Propose the smallest change, including every function you intend to add or modify, before writing code.
+
+This catches duplication and misplaced abstractions while they are still cheap to change.
+
+## 5. Tests are reviewable code too
+
+Repeated fixture creation and variables hide the behavior that differs between scenarios. Put stable prerequisites in ExUnit `setup`; keep scenario-specific values in the test. Do not extract setup used only once or hide the condition a test is meant to explain.
+
+## 6. Choose the smallest Phoenix abstraction
+
+| Need                                                    | Likely choice      |
+| ------------------------------------------------------- | ------------------ |
+| Render markup from assigns                              | Function component |
+| Share presentation with validated attributes or slots   | Function component |
+| Own independently addressed local state and events      | LiveComponent      |
+| Own page-level state, navigation, and process lifecycle | LiveView           |
+
+A LiveComponent is justified by genuine state or event ownership. Splitting markup alone is not enough.
+
+## 7. Use static analysis as a guardrail
+
+[ExSlop](https://github.com/elixir-vibe/ex_slop) adds Credo checks for patterns frequently over-produced by coding agents. As of 4 September 2026, [Hex publishes ExSlop 0.4.4](https://hex.pm/packages/ex_slop).
+
+Add it to `mix.exs`:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+def deps do
+  [
+    {:ex_slop, "~> 0.4", only: [:dev, :test], runtime: false}
+  ]
+end
+```
+
+For a Credo configuration without an explicit `checks.enabled` list, register the plugin:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+%{
+  configs: [
+    %{
+      name: "default",
+      plugins: [{ExSlop, []}]
+    }
+  ]
+}
+```
+
+If `.credo.exs` already has an explicit `checks.enabled` list, plugin registration alone does not activate the checks. Append the recommended set to that list:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+%{
+  configs: [
+    %{
+      name: "default",
+      plugins: [{ExSlop, []}],
+      checks: %{
+        enabled: [
+          # Existing checks...
+        ] ++ Enum.map(ExSlop.recommended_checks(), &{&1, []})
+      }
+    }
+  ]
+}
+```
+
+Then run `mix deps.get` and `mix credo`. Useful checks cover blanket rescues, swallowed errors, database queries inside enumeration, identity transformations, verbose `Enum` constructions, and narrator-style comments.
+
+A clean report does not prove that requirements, authorization, state transitions, abstraction choices, or reuse decisions are correct.
+
+## 8. Use separate implementation and review passes
+
+An implementation session accumulates assumptions. Review should challenge them.
+
+1. Inspect relevant code and callers.
+2. State contracts, invariants, and uncertainties.
+3. Agree on the smallest design before editing.
+4. Implement and run focused tests and static analysis.
+5. Review in a clean context, preferably without editing authority.
+6. Report concrete findings before summarizing the change.
+
+A focused review prompt:
+
+> Review this diff without editing it. Prioritize correctness and behavioral regressions. Trace missing and malformed values, error paths, stale or concurrent events, effects inside business logic, duplicated existing behavior, unnecessary complexity, and missing tests. Report findings by severity with file and line references.
+
+## Pull-request gate
+
+* [ ] Missing, malformed, stale, and unauthorized inputs have explicit behavior.
+* [ ] Real-time changes cover ordering, disconnects, retries, and multiple users.
+* [ ] Tests exercise transitions and failures, not only the happy path.
+* [ ] Pure decisions are separated from effects.
+* [ ] Existing public functions, modules, fixtures, and components are reused.
+* [ ] Pipelines, `with`, and `case` are chosen for clarity rather than by rule.
+* [ ] Every abstraction and defensive check corresponds to a real requirement.
+* [ ] Comments explain decisions and constraints rather than narrating syntax.
+* [ ] Credo and ExSlop findings were considered rather than mechanically suppressed.
+
+The target is code whose behavior, boundaries, and intent remain inspectable after the generation session is gone.
