@@ -35,38 +35,31 @@ defmodule WordlexWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://phoenix.hexdocs.pm/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
+    <div class="min-h-screen bg-[#f4f1e8] text-stone-950 dark:bg-stone-950 dark:text-stone-50">
+      <header class="border-b border-stone-300/80 bg-[#f4f1e8]/90 backdrop-blur dark:border-stone-800 dark:bg-stone-950/90">
+        <div class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4 sm:px-6">
+          <a
+            href={~p"/"}
+            class="flex items-center gap-2 focus:outline-none focus:ring-4 focus:ring-emerald-600/20"
+          >
+            <span class="grid grid-cols-2 gap-0.5" aria-hidden="true">
+              <span class="size-2.5 rounded-sm bg-emerald-600"></span>
+              <span class="size-2.5 rounded-sm bg-amber-500"></span>
+              <span class="size-2.5 rounded-sm bg-stone-500"></span>
+              <span class="size-2.5 rounded-sm bg-emerald-600"></span>
+            </span>
+            <span class="text-sm font-black uppercase tracking-[0.22em]">Wordlex</span>
+          </a>
+          <span class="text-xs font-semibold text-stone-500 dark:text-stone-400">A word game in Elixir</span>
+        </div>
+      </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
+      <main class="px-4 py-8 sm:px-6 sm:py-10">
+        <div class="mx-auto max-w-2xl">
+          {render_slot(@inner_block)}
+        </div>
+      </main>
+    </div>
 
     <.flash_group flash={@flash} />
     """
